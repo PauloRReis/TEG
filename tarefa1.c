@@ -1,20 +1,29 @@
+//Alunos: Carlos Bunn e Paulo Ricardo
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 
+//1 - SETOSA
+//2 - VERSICOLOR
+//3 - VIRGINICA
+
 typedef struct Flor{
     int id;
     double sepal_lenght,sepal_widht, petal_lenght, petal_widht;
+    int type;
 }Flor;
 
 typedef struct FloresDistEuclidiana{
     int vertice1, vertice2;
+    int type1, type2;
     double euclidiana;
 }FloresDistEuclidiana;
 
 typedef struct Aresta{
     int vertice1, vertice2;
+    int type1,type2;
     struct Aresta *prox;
 }Aresta;
 
@@ -28,6 +37,7 @@ FloresDistEuclidiana *resolveDistanciaEuclidiana(Flor *flores, double *max, doub
 FloresDistEuclidiana *normalizaFlor(FloresDistEuclidiana *euclidianas, double max, double min);
 ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas);
 void arquivoGrafo(ListaArestas *lista);
+void toStringFlores(Flor *flores);
 
 int main(int argc, char const *argv[]){
     double max, min;
@@ -38,6 +48,7 @@ int main(int argc, char const *argv[]){
 
     //consome o arquivo .csv retornando uma lista das flores
     flores = getFlores();
+    //toStringFlores(flores);
     //recebe a lista de flores e resolve a distancia euclidiana para todos os pares de vertices
     euclidiana = resolveDistanciaEuclidiana(flores, &max, &min);
     //normaliza a lista de todos os pares de vertices
@@ -83,6 +94,14 @@ Flor *getFlores(){
                 case 3:
                     novo.petal_widht = atof(token);
                     break;
+                case 4:
+                    if(i <= 50){
+                        novo.type = 1;
+                    }else if(i > 50 && i<=100){
+                        novo.type = 2;
+                    }else if(i>100 && i<=150){
+                        novo.type = 3;
+                    }
             }
             token = strtok(NULL, ",");
             j++;
@@ -113,11 +132,13 @@ FloresDistEuclidiana *resolveDistanciaEuclidiana(Flor *flores, double *max, doub
             }else if(euclidiana < *(min)){
                 *min = euclidiana;
             }
-
+            
             FloresDistEuclidiana novo;
             novo.vertice1 = i+1;
             novo.vertice2 = j+1;
             novo.euclidiana = euclidiana;
+            novo.type1 = flores[i].type;
+            novo.type2 = flores[j].type;
             floresEuclidianas[distancia] = novo;
             distancia++;
         }
@@ -135,6 +156,8 @@ FloresDistEuclidiana *normalizaFlor(FloresDistEuclidiana *euclidianas, double ma
         novo.vertice1 = euclidianas[i].vertice1;
         novo.vertice2 = euclidianas[i].vertice2;
         novo.euclidiana = (euclidianas[i].euclidiana - min)/(max - min);
+        novo.type1 = euclidianas[i].type1;
+        novo.type2 = euclidianas[i].type2;
         floresEuclidianas[i] = novo;
     }
 
@@ -161,6 +184,8 @@ ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas){
             aresta = aresta->prox;
         }
 
+        aresta->type1 = euclidianas[i].type1;
+        aresta->type2 = euclidianas[i].type2;
         aresta->vertice1 = euclidianas[i].vertice1;
         aresta->vertice2 = euclidianas[i].vertice2;
     }
@@ -184,4 +209,10 @@ void arquivoGrafo(ListaArestas *lista){
     }
 
     fclose(arquivo);
+}
+
+void toStringFlores(Flor *flores){
+    for(int i = 0; i < 150; i++){
+        printf("id:%d\n%.3f %.3f %.3f %.3f %d\n", flores[i].id, flores[i].sepal_lenght, flores[i].sepal_widht, flores[i].petal_lenght, flores[i].petal_widht, flores[i].type);
+    }
 }
