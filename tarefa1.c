@@ -36,6 +36,7 @@ Flor *getFlores();
 FloresDistEuclidiana *resolveDistanciaEuclidiana(Flor *flores, double *max, double *min);
 FloresDistEuclidiana *normalizaFlor(FloresDistEuclidiana *euclidianas, double max, double min);
 ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas);
+void matrizConfusao(ListaArestas *listaArestas);
 void arquivoGrafo(ListaArestas *lista);
 void toStringFlores(Flor *flores);
 
@@ -55,6 +56,8 @@ int main(int argc, char const *argv[]){
     ListaNormalizada = normalizaFlor(euclidiana, max, min);
     //forma uma lista com as distancias euclidianas menores que 0,3
     lista = listaArestasGrafo(ListaNormalizada);
+
+    matrizConfusao(lista);
     //gera um arquivo .csv com a lista de arestas
     arquivoGrafo(lista);
 
@@ -188,6 +191,7 @@ ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas){
         aresta->type2 = euclidianas[i].type2;
         aresta->vertice1 = euclidianas[i].vertice1;
         aresta->vertice2 = euclidianas[i].vertice2;
+        printf("%d %d %d %d\n", aresta->vertice1, aresta->vertice2, aresta->type1, aresta->type2);
     }
 
     printf("%d\n", lista->quantidade);
@@ -215,4 +219,24 @@ void toStringFlores(Flor *flores){
     for(int i = 0; i < 150; i++){
         printf("id:%d\n%.3f %.3f %.3f %.3f %d\n", flores[i].id, flores[i].sepal_lenght, flores[i].sepal_widht, flores[i].petal_lenght, flores[i].petal_widht, flores[i].type);
     }
+}
+
+void matrizConfusao(ListaArestas *listaArestas){
+
+    int **matriz;
+    Aresta *lista = listaArestas->primeira;
+    
+    int tp = 0;
+    
+    for(int i = 0; i <= listaArestas->quantidade; i++){
+        if(lista->type1 == lista->type2){
+            tp++;
+        }
+        if(lista->prox == NULL){
+            break;
+        }
+        lista = lista->prox;
+    }
+    printf("%d\n", tp);
+
 }
