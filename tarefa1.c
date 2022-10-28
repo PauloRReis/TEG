@@ -36,12 +36,13 @@ Flor *getFlores();
 FloresDistEuclidiana *resolveDistanciaEuclidiana(Flor *flores, double *max, double *min);
 FloresDistEuclidiana *normalizaFlor(FloresDistEuclidiana *euclidianas, double max, double min);
 ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas);
-void matrizConfusao(ListaArestas *listaArestas);
+int **matrizAdj(ListaArestas *lista);
+void matrizConfusao(ListaArestas *listaArestas, Flor *flores);
 void arquivoGrafo(ListaArestas *lista);
 void toStringFlores(Flor *flores);
 
 int main(int argc, char const *argv[]){
-    double max, min;
+    double max = 0, min = 0;
     Flor* flores;
     FloresDistEuclidiana *euclidiana;
     FloresDistEuclidiana *ListaNormalizada;
@@ -49,7 +50,6 @@ int main(int argc, char const *argv[]){
 
     //consome o arquivo .csv retornando uma lista das flores
     flores = getFlores();
-    //toStringFlores(flores);
     //recebe a lista de flores e resolve a distancia euclidiana para todos os pares de vertices
     euclidiana = resolveDistanciaEuclidiana(flores, &max, &min);
     //normaliza a lista de todos os pares de vertices
@@ -57,7 +57,7 @@ int main(int argc, char const *argv[]){
     //forma uma lista com as distancias euclidianas menores que 0,3
     lista = listaArestasGrafo(ListaNormalizada);
 
-    matrizConfusao(lista);
+    matrizConfusao(lista, flores);
     //gera um arquivo .csv com a lista de arestas
     arquivoGrafo(lista);
 
@@ -70,8 +70,10 @@ Flor *getFlores(){
     FILE *arq = fopen("IrisDataset.csv", "rt");
     char *result;
     char *token;
-
     char string[255];
+    char* lixo = (char*) malloc(sizeof(char) * 100);
+	fgets(lixo, 100, arq);
+	free(lixo);
 
     int i = 0;
     while(!feof(arq)){
@@ -113,8 +115,7 @@ Flor *getFlores(){
         flores[i] = novo;
         i++;
     } 
-    fclose(arq);
-
+    
     return flores;
 }
 
@@ -191,10 +192,7 @@ ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas){
         aresta->type2 = euclidianas[i].type2;
         aresta->vertice1 = euclidianas[i].vertice1;
         aresta->vertice2 = euclidianas[i].vertice2;
-        printf("%d %d %d %d\n", aresta->vertice1, aresta->vertice2, aresta->type1, aresta->type2);
     }
-
-    printf("%d\n", lista->quantidade);
 
     return lista;
 }
@@ -221,22 +219,80 @@ void toStringFlores(Flor *flores){
     }
 }
 
-void matrizConfusao(ListaArestas *listaArestas){
+int **matrizAdj(ListaArestas *lista){
 
-    int **matriz;
-    Aresta *lista = listaArestas->primeira;
+    int **mat;
+    int i, j;
+    Aresta *aux = lista->primeira;
+    mat = (int **)malloc(151 * sizeof(int *));
+
+    for(i = 0; i < 151; i++){
+        mat[i] = (int*)malloc(151*sizeof(int));
+    }
     
+    for(i = 0; i < 151; i++){
+		for(j = 0; j < 151; j++){
+			mat[i][j] = 0;
+        }
+	}
+
+    for(i = 0 ; i < 10500 ; i++){
+        int a = aux->vertice1;
+        int b = aux->vertice2;
+        mat[a][b] = 1;
+        aux = aux->prox;
+    }
+
+    return mat;
+}
+
+void matrizConfusao(ListaArestas *listaArestas, Flor *flores){
+
     int tp = 0;
+    int tn = 0;
+    int fp = 0;
+    int fn = 0;
+    int **mat = matrizAdj(listaArestas);
+    int i, j;
     
-    for(int i = 0; i <= listaArestas->quantidade; i++){
-        if(lista->type1 == lista->type2){
-            tp++;
+    for(i = 0 ; i < 50; i++){
+        for(int j = 0; j < 50; j++){
+            if(mat[i][j] == 1){
+                tp++;
+            }
         }
-        if(lista->prox == NULL){
-            break;
-        }
-        lista = lista->prox;
     }
     printf("%d\n", tp);
+
+    for(i = 0 ; i < 50; i++){
+        for(j = 50; j < 150; j++){
+            if(mat[i][j] == 1){
+                fp++;
+            }
+        }
+    }
+    printf("%d\n", fp);
+
+    for(i = 50 ; i < 150; i++){
+        for(j = 50; j < 150; j++){
+            if(mat[i][j] == 1){
+                tn++;
+            }
+        }
+    }
+    printf("%d\n", tn);
+
+    for(i = 50 ; i < 150; i++){
+        for(j = 0; j < 50; j++){
+            if(mat[i][j] == 1){
+                fn++;
+            }
+        }
+    }
+    printf("%d\n", fn);
+
+    double acuracia = (float)(tp+tn) / (tp+fp+tn+fn);
+
+    printf("%f\n", acuracia*100);
 
 }
