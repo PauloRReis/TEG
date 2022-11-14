@@ -36,10 +36,9 @@ Flor *getFlores();
 FloresDistEuclidiana *resolveDistanciaEuclidiana(Flor *flores, double *max, double *min);
 FloresDistEuclidiana *normalizaFlor(FloresDistEuclidiana *euclidianas, double max, double min);
 ListaArestas *listaArestasGrafo(FloresDistEuclidiana *euclidianas);
-int **matrizAdj(ListaArestas *lista);
 void matrizConfusao(ListaArestas *listaArestas, Flor *flores);
+int **matrizAdj(ListaArestas *lista);
 void arquivoGrafo(ListaArestas *lista);
-void toStringFlores(Flor *flores);
 
 int main(int argc, char const *argv[]){
     double max = 0, min = 0;
@@ -56,7 +55,7 @@ int main(int argc, char const *argv[]){
     ListaNormalizada = normalizaFlor(euclidiana, max, min);
     //forma uma lista com as distancias euclidianas menores que 0,3
     lista = listaArestasGrafo(ListaNormalizada);
-
+    //constroi a matriz de adjacencia da lista de arestas, calcula a matriz de confusão e a acuracia
     matrizConfusao(lista, flores);
     //gera um arquivo .csv com a lista de arestas
     arquivoGrafo(lista);
@@ -213,12 +212,6 @@ void arquivoGrafo(ListaArestas *lista){
     fclose(arquivo);
 }
 
-void toStringFlores(Flor *flores){
-    for(int i = 0; i < 150; i++){
-        printf("id:%d\n%.3f %.3f %.3f %.3f %d\n", flores[i].id, flores[i].sepal_lenght, flores[i].sepal_widht, flores[i].petal_lenght, flores[i].petal_widht, flores[i].type);
-    }
-}
-
 int **matrizAdj(ListaArestas *lista){
 
     int **mat;
@@ -262,7 +255,6 @@ void matrizConfusao(ListaArestas *listaArestas, Flor *flores){
             }
         }
     }
-    printf("%d\n", tp);
 
     for(i = 0 ; i < 50; i++){
         for(j = 50; j < 150; j++){
@@ -271,7 +263,6 @@ void matrizConfusao(ListaArestas *listaArestas, Flor *flores){
             }
         }
     }
-    printf("%d\n", fp);
 
     for(i = 50 ; i < 150; i++){
         for(j = 50; j < 150; j++){
@@ -280,7 +271,6 @@ void matrizConfusao(ListaArestas *listaArestas, Flor *flores){
             }
         }
     }
-    printf("%d\n", tn);
 
     for(i = 50 ; i < 150; i++){
         for(j = 0; j < 50; j++){
@@ -289,10 +279,12 @@ void matrizConfusao(ListaArestas *listaArestas, Flor *flores){
             }
         }
     }
-    printf("%d\n", fn);
 
     double acuracia = (float)(tp+tn) / (tp+fp+tn+fn);
 
-    printf("%f\n", acuracia*100);
+    printf("Acuracia: %f\n", acuracia*100);
+    printf("\n           Valores preditos\n");
+    printf("Valores reais| %d | %d  |\n", tp, fp);
+    printf("Valores reais| %d  | %d |\n", fn, tn);
 
 }
